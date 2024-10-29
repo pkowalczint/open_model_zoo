@@ -27,7 +27,7 @@ from .launcher import Launcher
 
 MODULE_REGEX = r'(?:\w+)(?:(?:.\w+)*)'
 DEVICE_REGEX = r'(?P<device>cpu$|cuda)?'
-CHECKPOINT_URL_REGEX = r'^https?://.*\.pth(\?.*)?(#.*)?$'
+CHECKPOINT_URL_REGEX = r'^https?://.*\.pth?(\?.*)?(#.*)?$'
 
 
 class PyTorchLauncher(Launcher):
@@ -162,7 +162,7 @@ class PyTorchLauncher(Launcher):
                     module = self._torch.nn.DataParallel(module)
                 module.load_state_dict(state, strict=False)
             module.to('cuda' if self.cuda else 'cpu')
-            module.eval()
+            #module.eval()
 
             if self.use_torch_compile:
                 if hasattr(model_cls, 'compile'):
@@ -221,7 +221,8 @@ class PyTorchLauncher(Launcher):
                     result_dict = self._convert_to_numpy(outputs)
                 else:
                     result_dict = {
-                        output_name: res.data.cpu().numpy() if self.cuda else res.data.numpy()
+                        #output_name: res.data.cpu().numpy() if self.cuda else res.data.numpy()
+                        output_name: res.cpu().numpy() if self.cuda else res.numpy()
                         for output_name, res in zip(self.output_names, outputs)
                     }
                 results.append(result_dict)
