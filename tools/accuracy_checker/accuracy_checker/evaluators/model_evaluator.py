@@ -417,6 +417,28 @@ class ModelEvaluator(BaseEvaluator):
         for batch_id, (batch_input_ids, batch_annotation, batch_input, batch_identifiers) in enumerate(self.dataset):
             filled_inputs, batch_meta, _ = self._get_batch_input(batch_annotation, batch_input)
             batch_predictions = self.launcher.predict(filled_inputs, batch_meta, **kwargs)
+
+            # TODO: DEBUG-PK
+            import torch
+            pred_masks = torch.tensor(batch_predictions[0]['pred_masks'])
+            probability_masks = torch.sigmoid(pred_masks)
+            probability_masks_np = probability_masks.cpu().numpy()
+            binary_masks = (probability_masks > 0.3).float()
+            binary_masks_np = binary_masks.cpu().numpy()[0][0]
+
+            # Save binary masks to a text file
+            with open("binary_masks.txt", "w") as f:
+                for i, mask in enumerate(binary_masks_np):
+                    f.write(f"Mask {i}:\n")
+                    np.savetxt(f, mask, fmt="%d")
+                    f.write("\n")
+
+            # with open("binary_masks.txt", "w") as f:
+            #     for i, mask in enumerate(binary_masks_np[0][0]):
+            #         f.write("Mask {}:\n".format(i))
+            #         for row in mask:
+            #             f.write("".join(format(int(value), '02x') for value in row) + "\n")
+
             if stored_predictions:
                 self.prepare_prediction_to_store(batch_predictions, batch_identifiers, batch_meta, stored_predictions)
             if not store_only:

@@ -302,6 +302,7 @@ def automatic_model_search(model_name, model_cfg, weights_cfg, model_type=None):
                     break
         if not model_list:
             raise ConfigError('suitable model is not found')
+        model_list = [model_list[1]] #DEBUG-PK
         if len(model_list) != 1:
             model_list = get_model_by_name(model_name, model_list)
             if len(model_list) != 1:

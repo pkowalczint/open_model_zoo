@@ -267,8 +267,9 @@ class PyTorchLauncher(Launcher):
                 else:
                     outputs = self.module(**batch_input)
 
-                    for meta_ in metadata:
-                        meta_['input_shape'] = {key: list(data.shape) for key, data in batch_input.items()}
+                for meta_ in metadata:  #DEBUG-PK - promoted this line
+                    meta_['input_shape'] = {key: list(data.shape) for key, data in batch_input.items()}
+                    # meta_['input_shape'] = {layer_name: np.shape(data) for layer_name, data in batch_input.items()}
 
                 if metadata[0].get('output_is_dict_type') or isinstance(outputs, dict):
                     result_dict = self._convert_to_numpy(outputs)
@@ -286,6 +287,14 @@ class PyTorchLauncher(Launcher):
 
     def release(self):
         del self.module
+
+    # def _fill_meta(self, metadata, inputs=None):
+    #     for meta_ in metadata:
+    #         meta_['input_shape'] = self.inputs_info_for_meta(inputs)
+    #         if self._output_layouts:
+    #             meta_['output_layout'] = self._output_layouts
+    #         if self._output_precisions:
+    #             meta_['output_precision'] = self._output_precisions
 
 
 @contextmanager

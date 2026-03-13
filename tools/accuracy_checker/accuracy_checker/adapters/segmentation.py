@@ -64,7 +64,7 @@ class SegmentationAdapter(Adapter):
         return result
 
     def prepare_seg_map(self, meta, output):
-        input_shape = next(iter(meta['input_shape'].values()))
+        input_shape = next(iter(meta['input_shape'].values()))   #DEBUG-PK: missing meta[input_shape]
         is_chw = input_shape[1] <= 4
         if len(output.shape) == 2 and len(input_shape) == 4:
             (in_h, in_w) = input_shape[2:] if is_chw else input_shape[1:3]
