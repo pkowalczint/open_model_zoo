@@ -32,6 +32,7 @@ class ASRPipelineEvaluator(BaseCustomEvaluator):
     VALID_PIPELINE_CLASSES = [
         "GenAIASRPipeline",
         "HFASRPipeline",
+        "HfFunAsrPipeline",
         "Qwen3ASROptimumPipeline",
     ]
 
@@ -305,3 +306,34 @@ class HFASRPipeline(ASRPipeline):
                 "num_beams": 1,
             },
         )["text"]
+
+class HfFunAsrPipeline(ASRPipeline):
+    def __init__(self, config):
+        self.device = config.get("_device", "cpu").lower()
+        self.language = config.get("language", "en")
+        super().__init__(config)
+
+    def _initialize_pipeline(self, config):
+        try:
+            from funasr import AutoModel
+        except ImportError as ie:
+            UnsupportedPackage("funasr", ie.msg).raise_error(self.__class__.__name__)
+
+        model_id = config.get("model_id")
+        model = AutoModel(
+            model=model_id,
+            hub="hf",
+            trust_remote_code=True,
+            device=self.device
+        )
+        return model
+
+    def _get_predictions(self, data, identifier, input_meta):
+        res = self.pipeline.generate(
+            input=[data[0].astype("float32")],
+            cache={},
+            hotwords=[],
+            language=self.language,
+            itn=True,
+        )
+        return res[0]["text"]
